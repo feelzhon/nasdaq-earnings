@@ -1,0 +1,37 @@
+# 可选：把项目推送到 GitHub 后，此工作流每天自动抓取财报并提交更新 data.js。
+# 配合 GitHub Pages 使用即可获得「在线 + 每日自动更新」的版本。
+name: 每日刷新财报数据
+
+on:
+  schedule:
+    # 每天 13:07 / 21:07 UTC（对应美股盘前披露与盘后披露之后）
+    - cron: "7 13,21 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 抓取财报数据
+        run: node fetch-data.mjs
+
+      - name: 提交更新
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data.js
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: 更新财报数据 $(date -u +%Y-%m-%d)"
+            git push
+          else
+            echo "数据无变化，跳过提交"
+          fi

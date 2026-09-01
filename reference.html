@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>纳斯达克 Top1000 财报日历 · 调研参考与方案</title>
+<style>
+  :root {
+    color-scheme: light;
+    --surface-1: #fcfcfb;
+    --page: #f9f9f7;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --muted: #898781;
+    --gridline: #e1e0d9;
+    --border: rgba(11,11,11,0.10);
+    --series-1: #2a78d6;
+    --series-2: #eb6834;
+    --series-3: #1baf7a;
+    --series-4: #eda100;
+    --series-5: #e87ba4;
+    --good: #0ca30c;
+    --warning: #fab219;
+    --critical: #d03b3b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --surface-1: #1a1a19;
+      --page: #0d0d0d;
+      --text-primary: #ffffff;
+      --text-secondary: #c3c2b7;
+      --gridline: #2c2c2a;
+      --border: rgba(255,255,255,0.10);
+      --series-1: #3987e5;
+      --series-2: #d95926;
+      --series-3: #199e70;
+      --series-4: #c98500;
+      --series-5: #d55181;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--text-primary);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 40px 28px 96px; }
+  header { border-bottom: 1px solid var(--border); padding-bottom: 28px; margin-bottom: 8px; }
+  .kicker {
+    font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--series-1); font-weight: 700; margin: 0 0 8px;
+  }
+  h1 { font-size: 30px; margin: 0 0 10px; letter-spacing: -.01em; }
+  h2 { font-size: 20px; margin: 48px 0 4px; letter-spacing: -.01em; }
+  h3 { font-size: 15px; margin: 0 0 2px; }
+  .sub { color: var(--text-secondary); font-size: 15px; margin: 0 0 6px; }
+  .lede { color: var(--text-secondary); font-size: 15px; max-width: 720px; }
+  section { margin-top: 8px; }
+
+  /* —— 项目卡片 —— */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; margin-top: 16px; }
+  .card {
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 16px 14px; display: flex; flex-direction: column; gap: 8px;
+  }
+  .card .top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .card .name { font-weight: 700; font-size: 15px; word-break: break-all; }
+  .stars { flex: none; font-size: 12.5px; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+  .stars b { color: var(--series-4); }
+  .desc { font-size: 13.5px; color: var(--text-secondary); }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; }
+  .tag {
+    font-size: 11.5px; padding: 2px 8px; border-radius: 999px;
+    border: 1px solid var(--border); color: var(--text-secondary); background: transparent;
+  }
+  .tag.hl { color: var(--series-1); border-color: var(--series-1); }
+  .match { font-size: 11.5px; color: var(--good); font-weight: 700; }
+  .partial { font-size: 11.5px; color: var(--series-4); font-weight: 700; }
+
+  /* —— 表格 —— */
+  table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 13.5px; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--gridline); vertical-align: top; }
+  th { font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  td { color: var(--text-secondary); }
+  td strong, td b { color: var(--text-primary); font-weight: 600; }
+  .num { font-variant-numeric: tabular-nums; }
+  .yes { color: var(--good); font-weight: 700; }
+  .no  { color: var(--critical); font-weight: 700; }
+  .mid { color: var(--series-4); font-weight: 700; }
+
+  /* —— 推荐架构流程 —— */
+  .flow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 16px; }
+  .flow .box {
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 14px; font-size: 13px; font-weight: 600;
+  }
+  .flow .box small { display: block; font-weight: 400; color: var(--muted); font-size: 11.5px; }
+  .flow .arrow { color: var(--muted); font-size: 18px; }
+  .flow .box.key { border-color: var(--series-1); }
+  .flow .box.key small { color: var(--series-1); }
+
+  /* —— 线框图 —— */
+  .wireframe {
+    margin-top: 16px; background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden;
+  }
+  .wf-topbar { display: flex; align-items: center; gap: 16px; padding: 14px 18px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .wf-logo { font-weight: 800; font-size: 16px; }
+  .wf-logo span { color: var(--series-1); }
+  .wf-nav { display: flex; gap: 6px; flex-wrap: wrap; }
+  .wf-chip { font-size: 12.5px; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--border); color: var(--text-secondary); }
+  .wf-chip.active { background: var(--series-1); color: #fff; border-color: var(--series-1); }
+  .wf-spacer { margin-left: auto; }
+  .wf-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+  .kpi { padding: 10px 12px; border-radius: 10px; background: var(--page); }
+  .kpi .label { font-size: 11.5px; color: var(--muted); }
+  .kpi .val { font-size: 24px; font-weight: 800; letter-spacing: -.02em; }
+  .kpi .val small { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+  .wf-body { display: grid; grid-template-columns: 1.5fr 1fr; gap: 0; }
+  @media (max-width: 760px) { .wf-body { grid-template-columns: 1fr; } }
+  .cal { padding: 16px 18px; border-right: 1px solid var(--border); }
+  .cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .cal-head b { font-size: 15px; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+  .cal-dow { font-size: 11px; color: var(--muted); text-align: center; padding: 2px 0; text-transform: uppercase; }
+  .cal-cell {
+    min-height: 74px; border: 1px solid var(--gridline); border-radius: 8px; padding: 4px 5px;
+    font-size: 11px; display: flex; flex-direction: column; gap: 2px; position: relative;
+  }
+  .cal-cell .d { font-weight: 600; font-size: 11.5px; }
+  .cal-cell.dim { opacity: .35; }
+  .cal-cell.today { border-color: var(--series-1); }
+  .cal-cell.today .d { color: var(--series-1); }
+  .tick { display: flex; align-items: center; gap: 4px; font-size: 10.5px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; }
+  .dot { width: 7px; height: 7px; border-radius: 2px; flex: none; }
+  .dot.bmo { background: var(--series-1); }
+  .dot.amc { background: var(--series-2); }
+  .dot.tas { background: var(--muted); }
+  .more { color: var(--muted); font-size: 10px; }
+  .list { padding: 16px 18px; }
+  .list b { font-size: 13px; display: block; margin-bottom: 10px; }
+  .list-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--gridline); font-size: 12.5px; }
+  .list-row:last-child { border-bottom: none; }
+  .sym { font-weight: 700; min-width: 44px; }
+  .mktcap { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; font-size: 11.5px; }
+  .pill { font-size: 10.5px; padding: 1px 7px; border-radius: 999px; color: #fff; }
+  .pill.bmo { background: var(--series-1); }
+  .pill.amc { background: var(--series-2); }
+  .pill.tas { background: var(--muted); }
+
+  .note { font-size: 12.5px; color: var(--muted); margin-top: 14px; }
+  .legend { display: flex; gap: 14px; align-items: center; font-size: 11.5px; color: var(--text-secondary); margin-top: 10px; flex-wrap: wrap; }
+  .legend .dot { width: 9px; height: 9px; }
+  .foot { margin-top: 56px; border-top: 1px solid var(--border); padding-top: 18px; font-size: 12.5px; color: var(--muted); }
+  a { color: var(--series-1); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="kicker">Research · 调研参考</p>
+    <h1>纳斯达克市值 Top1000 财报日历 · 方案与原型</h1>
+    <p class="lede">目标：做一个网站，展示纳斯达克市值前 1000 家公司的财报发布日期。下面是 GitHub 上已有类似项目的对比、可用的数据源、推荐架构，以及网站原型线框图。</p>
+  </header>
+
+  <!-- ============ 第一部分：GitHub 已有项目 ============ -->
+  <section>
+    <h2>1. GitHub 已有项目对比</h2>
+    <p class="sub">按与本需求的契合度排序。绿色 = 高度契合，黄色 = 部分契合。</p>
+    <div class="grid">
+
+      <div class="card">
+        <div class="top"><span class="name">jason5ng32/OhEarningsCal</span><span class="stars">★ <b>567</b></span></div>
+        <p class="match">● 高度契合（最值得参考）</p>
+        <p class="desc">把美股财报日期生成 <b>ICS 日历订阅</b>，可直接导入 Google/Apple 日历。已内置 <b>NASDAQ100 / S&P500 / Dow30 / 自定义个股</b> 多个订阅。</p>
+        <div class="tags">
+          <span class="tag hl">Node.js + GitHub Actions</span>
+          <span class="tag">纳斯达克 API</span>
+          <span class="tag">每日自动更新</span>
+          <span class="tag">GitHub Pages 托管</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="top"><span class="name">tradermonty/earnings-calendar</span><span class="stars">Agent Skill</span></div>
+        <p class="match">● 高度契合（市值筛选思路）</p>
+        <p class="desc">正是「按市值筛选财报」的思路：筛 <b>&gt;$2B</b> 公司，输出 EPS/营收预期，分 <b>盘前 BMO / 盘后 AMC / 待定 TAS</b>，按市值降序排列。</p>
+        <div class="tags">
+          <span class="tag hl">FMP API</span>
+          <span class="tag">市值筛选 &gt;$2B</span>
+          <span class="tag">EPS + 营收预期</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="top"><span class="name">s-kerin/finance_calendars</span><span class="stars">★ <b>~31</b></span></div>
+        <p class="match">● 高度契合（数据层）</p>
+        <p class="desc">Python 封装纳斯达克公开 API，提供 <b>财报 / IPO / 股息 / 拆股</b> 日历，覆盖全美股。可直接拿来做后端数据层。</p>
+        <div class="tags"><span class="tag hl">Python</span><span class="tag">纳斯达克 API</span><span class="tag">全美股</span></div>
+      </div>
+
+      <div class="card">
+        <div class="top"><span class="name">taglia/yahoo-earnings-calendar</span><span class="stars">★ <b>~188</b></span></div>
+        <p class="partial">● 部分契合</p>
+        <p class="desc">抓取 Yahoo Finance 财报日历，按日期/区间查询。数据全但 <b>抓取易被封禁</b>，稳定性一般。</p>
+        <div class="tags"><span class="tag">Python</span><span class="tag">Yahoo 抓取</span><span class="tag">易封</span></div>
+      </div>
+
+      <div class="card">
+        <div class="top"><span class="name">BEllis0/Stock-App</span><span class="stars">Web App</span></div>
+        <p class="partial">● 部分契合（完整应用范本）</p>
+        <p class="desc">MERN 全栈：Finnhub API + News API，含财报/IPO 日历与自选股。是「网站形态」的参考，但需要后端 + API key。</p>
+        <div class="tags"><span class="tag">MERN</span><span class="tag">Finnhub</span><span class="tag">自选股</span></div>
+      </div>
+
+      <div class="card">
+        <div class="top"><span class="name">avchikar97/Earnings-Calendar-ICS</span><span class="stars">Script</span></div>
+        <p class="partial">● 部分契合</p>
+        <p class="desc">为自定义股票代码生成下一财报日期的 ICS 事件。轻量，但需手动维护代码列表。</p>
+        <div class="tags"><span class="tag">Python</span><span class="tag">ICS 生成</span><span class="tag">自定义个股</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ 第二部分：数据源 ============ -->
+  <section>
+    <h2>2. 数据源对比</h2>
+    <p class="sub">「市值前 1000」这个需求，关键在两点：① 能否拿到市值排序 ② 能否拿到财报日期。</p>
+    <table>
+      <thead>
+        <tr><th>数据源</th><th>需要 Key</th><th>市值数据</th><th>财报日期</th><th>免费额度</th><th>稳定性</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>纳斯达克公开 API</b>（api.nasdaq.com）</td>
+          <td class="no">无需</td>
+          <td class="yes">有（screener 可按市值排序）</td>
+          <td class="yes">有（/calendar/earnings）</td>
+          <td>无明确限制</td>
+          <td class="mid">中（需 UA 请求头）</td>
+        </tr>
+        <tr>
+          <td><b>Financial Modeling Prep (FMP)</b></td>
+          <td class="yes">需要</td>
+          <td class="yes">有</td>
+          <td class="yes">有（含 EPS/营收）</td>
+          <td>250 次/天</td>
+          <td class="yes">高</td>
+        </tr>
+        <tr>
+          <td><b>Yahoo Finance</b>（抓取）</td>
+          <td class="no">无需</td>
+          <td class="yes">有</td>
+          <td class="yes">有</td>
+          <td>无明确限制</td>
+          <td class="no">低（易封禁）</td>
+        </tr>
+        <tr>
+          <td><b>Finnhub</b></td>
+          <td class="yes">需要</td>
+          <td class="mid">部分</td>
+          <td class="mid">财报日历为付费端点</td>
+          <td>60 次/分</td>
+          <td class="mid">中</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="note">结论：<b style="color:var(--text-primary)">纳斯达克公开 API 是最优解</b>——免费、无需 Key，且能同时拿到「市值排序」和「财报日期」，两个需求一次满足；FMP 作为可选增强（补充 EPS/营收预期）。</p>
+  </section>
+
+  <!-- ============ 第三部分：推荐架构 ============ -->
+  <section>
+    <h2>3. 推荐架构</h2>
+    <p class="sub">借鉴 OhEarningsCal 的成熟模式：静态站 + GitHub Actions 每日抓取，零成本、零后端。</p>
+    <div class="flow">
+      <div class="box key">GitHub Actions<br><small>每日定时（美股盘前/盘后各一次）</small></div>
+      <span class="arrow">→</span>
+      <div class="box">抓取纳斯达克 API<br><small>市值 Top1000 列表 + 财报日历</small></div>
+      <span class="arrow">→</span>
+      <div class="box">交叉匹配、生成 JSON<br><small>只保留 Top1000 内的财报</small></div>
+      <span class="arrow">→</span>
+      <div class="box">提交到仓库<br><small>data/earnings.json</small></div>
+      <span class="arrow">→</span>
+      <div class="box key">静态网站读取展示<br><small>GitHub Pages / Vercel</small></div>
+    </div>
+    <p class="note">前端无需任何请求到第三方——所有数据由定时任务预生成，网站打开即秒加载，也不会触发 API 限流。</p>
+  </section>
+
+  <!-- ============ 第四部分：网站原型线框图 ============ -->
+  <section>
+    <h2>4. 网站原型线框图</h2>
+    <p class="sub">日历 + 列表双视图，按市值排序，盘前/盘后用颜色区分。</p>
+
+    <div class="wireframe">
+      <div class="wf-topbar">
+        <div class="wf-logo">Nasdaq<span>Earnings</span></div>
+        <div class="wf-nav">
+          <span class="wf-chip active">日历</span>
+          <span class="wf-chip">列表</span>
+          <span class="wf-chip">自选股</span>
+        </div>
+        <div class="wf-spacer"></div>
+        <div class="wf-nav">
+          <span class="wf-chip">◀</span>
+          <span class="wf-chip active">2026年9月</span>
+          <span class="wf-chip">▶</span>
+          <span class="wf-chip">今天</span>
+        </div>
+      </div>
+
+      <div class="wf-kpis">
+        <div class="kpi"><div class="label">今日财报</div><div class="val">23</div></div>
+        <div class="kpi"><div class="label">本周财报</div><div class="val">148</div></div>
+        <div class="kpi"><div class="label">盘前 BMO</div><div class="val">9</div></div>
+        <div class="kpi"><div class="label">盘后 AMC</div><div class="val">14</div></div>
+        <div class="kpi"><div class="label">Top1000 覆盖</div><div class="val">1000<small> 家</small></div></div>
+      </div>
+
+      <div class="wf-body">
+        <div class="cal">
+          <div class="cal-head"><b>2026 年 9 月</b><span style="color:var(--muted);font-size:12px">市值前 1000 家 · 点击日期看详情</span></div>
+          <div class="cal-grid">
+            <div class="cal-dow">日</div><div class="cal-dow">一</div><div class="cal-dow">二</div><div class="cal-dow">三</div><div class="cal-dow">四</div><div class="cal-dow">五</div><div class="cal-dow">六</div>
+            <div class="cal-cell dim"><span class="d">30</span></div>
+            <div class="cal-cell dim"><span class="d">31</span></div>
+            <div class="cal-cell today"><span class="d">1</span>
+              <span class="tick"><span class="dot bmo"></span>NVDA</span>
+              <span class="tick"><span class="dot amc"></span>ZM</span>
+              <span class="more">+4 家</span>
+            </div>
+            <div class="cal-cell"><span class="d">2</span>
+              <span class="tick"><span class="dot bmo"></span>COST</span>
+              <span class="tick"><span class="dot amc"></span>CRWD</span>
+            </div>
+            <div class="cal-cell"><span class="d">3</span>
+              <span class="tick"><span class="dot amc"></span>AVGO</span>
+              <span class="tick"><span class="dot bmo"></span>PDD</span>
+            </div>
+            <div class="cal-cell"><span class="d">4</span>
+              <span class="tick"><span class="dot bmo"></span>MU</span>
+            </div>
+            <div class="cal-cell"><span class="d">5</span></div>
+            <div class="cal-cell"><span class="d">6</span></div>
+            <div class="cal-cell"><span class="d">7</span></div>
+            <div class="cal-cell"><span class="d">8</span>
+              <span class="tick"><span class="dot amc"></span>ORCL</span>
+            </div>
+            <div class="cal-cell"><span class="d">9</span>
+              <span class="tick"><span class="dot amc"></span>ADBE</span>
+            </div>
+            <div class="cal-cell"><span class="d">10</span></div>
+            <div class="cal-cell"><span class="d">11</span></div>
+            <div class="cal-cell"><span class="d">12</span></div>
+            <div class="cal-cell"><span class="d">13</span></div>
+            <div class="cal-cell"><span class="d">14</span>
+              <span class="tick"><span class="dot bmo"></span>LEN</span>
+            </div>
+            <div class="cal-cell"><span class="d">15</span></div>
+          </div>
+          <div class="legend">
+            <span class="dot bmo"></span>盘前 BMO　<span class="dot amc"></span>盘后 AMC　<span class="dot tas"></span>时间待定
+          </div>
+        </div>
+
+        <div class="list">
+          <b>9 月 1 日 · 财报列表（按市值降序）</b>
+          <div class="list-row"><span class="sym">NVDA</span> 英伟达 <span class="pill bmo">BMO</span><span class="mktcap">3.2T</span></div>
+          <div class="list-row"><span class="sym">ZM</span> Zoom <span class="pill amc">AMC</span><span class="mktcap">212B</span></div>
+          <div class="list-row"><span class="sym">SPLK</span> Splunk <span class="pill amc">AMC</span><span class="mktcap">148B</span></div>
+          <div class="list-row"><span class="sym">CRWD</span> CrowdStrike <span class="pill bmo">BMO</span><span class="mktcap">96B</span></div>
+          <div class="list-row"><span class="sym">GTLB</span> GitLab <span class="pill tas">TAS</span><span class="mktcap">41B</span></div>
+          <div class="list-row"><span class="sym">ESTC</span> Elastic <span class="pill amc">AMC</span><span class="mktcap">12B</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">
+    <p>参考来源：<a href="https://github.com/jason5ng32/OhEarningsCal">OhEarningsCal</a> ·
+    <a href="https://github.com/tradermonty/claude-trading-skills/blob/main/docs/en/skills/earnings-calendar.md">tradermonty/earnings-calendar</a> ·
+    <a href="https://github.com/s-kerin/finance_calendars">finance_calendars</a> ·
+    <a href="https://github.com/taglia/yahoo-earnings-calendar">yahoo-earnings-calendar</a> ·
+    <a href="https://github.com/BEllis0/Stock-App">Stock-App</a> ·
+    <a href="https://dev.to/scrapemint/get-a-stock-earnings-calendar-as-clean-json-earnings-dividends-ipos-splits-47g7">纳斯达克无 Key JSON 接口</a></p>
+    <p>本页为静态参考文档，纯本地 HTML，可离线查看。原型中公司名/日期为示意数据。</p>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>纳斯达克上市股财报日历</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- 顶栏 -->
+  <header class="topbar">
+    <div class="logo">Nasdaq<span>Earnings</span><em>纳斯达克上市股财报日历</em></div>
+    <div class="topbar-right">
+      <span class="updated" id="updatedAt"></span>
+      <button class="icon-btn" id="themeToggle" title="切换明暗主题" aria-label="切换明暗主题">🌙</button>
+    </div>
+  </header>
+
+  <!-- KPI 概览 -->
+  <section class="kpis" id="kpis">
+    <div class="kpi"><div class="k-label">今日财报</div><div class="k-val" id="kToday">–</div></div>
+    <div class="kpi"><div class="k-label">本周财报</div><div class="k-val" id="kWeek">–</div></div>
+    <div class="kpi"><div class="k-label">盘前 BMO（今日）</div><div class="k-val" id="kBMO">–</div></div>
+    <div class="kpi"><div class="k-label">盘后 AMC（今日）</div><div class="k-val" id="kAMC">–</div></div>
+    <div class="kpi"><div class="k-label">纳斯达克上市股</div><div class="k-val" id="kCover">–</div></div>
+  </section>
+
+  <!-- 筛选工具栏 -->
+  <section class="toolbar">
+    <div class="search">
+      <span class="s-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="搜索代码 / 公司名，如 NVDA、英伟达" autocomplete="off">
+    </div>
+
+    <select id="sectorSelect" class="select" title="按行业筛选">
+      <option value="all">全部行业</option>
+    </select>
+
+    <select id="capSelect" class="select" title="按市值筛选">
+      <option value="all">全部市值</option>
+      <option value="mega">≥ $200B · 超大盘</option>
+      <option value="large">$10B – 200B · 大盘</option>
+      <option value="mid">$2B – 10B · 中盘</option>
+      <option value="small">&lt; $2B · 小盘</option>
+    </select>
+
+    <div class="seg" id="timeSeg" title="按发布时间筛选">
+      <button class="seg-btn active" data-t="all">全部</button>
+      <button class="seg-btn" data-t="BMO">盘前 BMO</button>
+      <button class="seg-btn" data-t="AMC">盘后 AMC</button>
+      <button class="seg-btn" data-t="TAS">待定 TAS</button>
+    </div>
+
+    <button class="watch-toggle" id="watchToggle" title="只看自选股">
+      <span class="star">★</span><span id="watchToggleLabel">只看自选</span>
+    </button>
+
+    <button class="clear" id="clearFilters" title="清空筛选">清空</button>
+  </section>
+
+  <!-- 视图切换 -->
+  <div class="view-switch" id="viewSwitch">
+    <button class="v-btn active" data-view="calendar">📅 月历</button>
+    <button class="v-btn" data-view="list">📋 列表</button>
+  </div>
+
+  <!-- ============ 月历视图 ============ -->
+  <section class="view" id="view-calendar">
+    <div class="cal-wrap">
+      <div class="cal-head">
+        <button class="icon-btn" id="prevMonth" title="上月">‹</button>
+        <button class="today-btn" id="todayBtn">今天</button>
+        <h2 class="cal-title" id="calTitle">2026年9月</h2>
+        <button class="icon-btn" id="nextMonth" title="下月">›</button>
+      </div>
+
+      <div class="cal-weekdays">
+        <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+
+      <div class="legend">
+        <span class="lg"><span class="dot bmo"></span>盘前 BMO</span>
+        <span class="lg"><span class="dot amc"></span>盘后 AMC</span>
+        <span class="lg"><span class="dot tas"></span>时间待定</span>
+      </div>
+    </div>
+
+    <!-- 侧栏：选中日期详情 -->
+    <aside class="side" id="sidePanel">
+      <div class="side-head">
+        <h3 id="sideDate">今日财报</h3>
+        <span class="side-count" id="sideCount"></span>
+      </div>
+      <div class="side-list" id="sideList"></div>
+    </aside>
+  </section>
+
+  <!-- ============ 列表视图 ============ -->
+  <section class="view" id="view-list" hidden>
+    <div class="list-view" id="listView"></div>
+  </section>
+
+  <footer class="foot">
+    <p>数据来源：纳斯达克公开 API（api.nasdaq.com，免费无需 Key）· 财报日期通常仅提前 4~8 周公布，本页展示未来约 2 个月窗口。</p>
+    <p>刷新数据：终端运行 <code>node fetch-data.mjs</code>。自选股保存在本地浏览器（localStorage），不会上传。</p>
+  </footer>
+
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
