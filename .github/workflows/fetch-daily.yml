@@ -31,7 +31,7 @@ jobs:
           git add data.js
           if ! git diff --cached --quiet; then
             git commit -m "chore: 更新财报数据 $(date -u +%Y-%m-%d)"
-            git push
+            git push origin HEAD:main
           else
             echo "数据无变化，跳过提交"
           fi
